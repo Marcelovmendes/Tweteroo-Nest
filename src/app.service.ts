@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entities/sign.entity';
 import { Tweets } from './entities/tweets.entity';
 
@@ -11,6 +11,7 @@ export class AppService {
     this.tweets = [];
   }
   signUp(username: string, avatar: string) {
+
     const user = new User(username, avatar);
     this.users.push(user);
     return user;
@@ -25,7 +26,7 @@ export class AppService {
 
   createTweet(username: string, tweet: string) {
     const acess = this.auth(username);
-    if (!acess) throw new Error('UNAUTHORIZED');
+    if (!acess)  throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
 
     const result = new Tweets(username, tweet);
     this.tweets.push(result);
@@ -45,10 +46,9 @@ export class AppService {
         };
       });
     }
-    if (typeof page !== 'number' || page < 1) {
-      throw new Error('Informe uma página válida!');
+    if (page && (isNaN(page) || page < 1)) {
+      throw new HttpException('Informe uma página válida!', HttpStatus.BAD_REQUEST);
     }
-
     const tweetsPerPage = 15;
     const startIndex = (page - 1) * tweetsPerPage;
     const endIndex = startIndex + tweetsPerPage;
@@ -70,6 +70,6 @@ export class AppService {
     return tweets;
   }
   getHealth(): string {
-    return 'OK';
+    return "I'm okay!";
   }
 }
